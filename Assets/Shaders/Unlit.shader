@@ -1,55 +1,55 @@
 ﻿Shader "Unlit/Unlit"
 {
-    Properties
-    {
-        _MainTex ("Texture", 2D) = "white" {}
-    }
-    SubShader
-    {
-        Tags { "RenderType"="Opaque" }
-        LOD 100
+	Properties
+	{
+		_Value("Value", Float) = 1.0
+	}
+		SubShader
+	{
+		Tags { "RenderType" = "Opaque" }
+		LOD 100
 
-        Pass
-        {
-            CGPROGRAM
-            #pragma vertex vert
-            #pragma fragment frag
-            // make fog work
-            #pragma multi_compile_fog
+		Pass
+		{
+			CGPROGRAM
+			#pragma vertex vert
+			#pragma fragment frag
 
-            #include "UnityCG.cginc"
+			#include "UnityCG.cginc"
 
-            struct appdata
+			float _Value;
+
+            struct appdata //Per Mesh Data
             {
-                float4 vertex : POSITION;
-                float2 uv : TEXCOORD0;
+                float4 vertex : POSITION;	//Vertex Position
+				float3 normals : NORMAL;	//The v1ertex' normal
+				//float4 tangent : TANGENT;	//Vertex Tangent
+				//float4 color : COLOR;		//Vertex Color
+                float2 uv0 : TEXCOORD0;		//UV0 Coordinates (can be very general)
+				//float2 uv1 : TEXCOORD1;		//UV1 could be the lightmaps etc
             };
 
-            struct v2f
+            struct v2f	//The data that gets passed from vertex shader to fragment shader (Interpolators), vertex shader returns this
             {
-                float2 uv : TEXCOORD0;
-                UNITY_FOG_COORDS(1)
-                float4 vertex : SV_POSITION;
+				float4 vertex : SV_POSITION;	//Clip space position of each vertex
+                float2 uv : TEXCOORD0;			//NOT UV Channel, used for passing data
+				//float2 uv : TEXCOORD2;
+				//float2 uv : TEXCOORD1;
             };
-
-            sampler2D _MainTex;
-            float4 _MainTex_ST;
 
             v2f vert (appdata v)
             {
                 v2f o;
                 o.vertex = UnityObjectToClipPos(v.vertex);
-                o.uv = TRANSFORM_TEX(v.uv, _MainTex);
-                UNITY_TRANSFER_FOG(o,o.vertex);
+				//o.uv = ;
                 return o;
             }
 
             fixed4 frag (v2f i) : SV_Target
             {
                 // sample the texture
-                fixed4 col = tex2D(_MainTex, i.uv);
+				fixed4 col = (1,1,1,1) * _Value;
                 // apply fog
-                UNITY_APPLY_FOG(i.fogCoord, col);
                 return col;
             }
             ENDCG
